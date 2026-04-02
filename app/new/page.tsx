@@ -125,7 +125,7 @@ interface FlightData {
   return: Flight[];
 }
 
-function ChooseFlightPage() {
+function NewTripPage() {
   const [view, setView] = React.useState<"create" | "view">("create");
   const [departureDate, setDepartureDate] = React.useState<Date>();
   const [returnDate, setReturnDate] = React.useState<Date>();
@@ -391,7 +391,7 @@ function ChooseFlightPage() {
                         {departureDate ? (
                           formatDate(departureDate)
                         ) : (
-                          <span>Pick a date</span>
+                          <span>Pick departure date</span>
                         )}
                         <ChevronDownIcon />
                       </Button>
@@ -416,7 +416,7 @@ function ChooseFlightPage() {
                         {returnDate ? (
                           formatDate(returnDate)
                         ) : (
-                          <span>Pick a date</span>
+                          <span>Pick return date</span>
                         )}
                         <ChevronDownIcon />
                       </Button>
@@ -560,6 +560,7 @@ function ChooseFlightPage() {
             <AccordionItem
               value="hotels"
               className="border px-6 py-2 rounded-lg bg-card"
+              disabled={!flightsConfirmed}
             >
               <AccordionTrigger className="text-2xl font-semibold hover:no-underline cursor-pointer data-disabled:opacity-50">
                 <div className="flex items-center gap-4">
@@ -743,6 +744,7 @@ function ChooseFlightPage() {
             <AccordionItem
               value="events/weather"
               className="border px-6 py-2 rounded-lg bg-card"
+              disabled={!flightsConfirmed && !hotelConfirmed}
             >
               <AccordionTrigger className="text-2xl font-semibold hover:no-underline cursor-pointer">
                 <div className="flex items-center gap-4">
@@ -898,9 +900,9 @@ function ChooseFlightPage() {
             </AccordionItem>
           </Accordion>
 
-          {!selectedDepFlight &&
-            !selectedRetFlight &&
-            !selectedHotel && ( // # MUST REMOVE !s
+          {selectedDepFlight &&
+            selectedRetFlight &&
+            selectedHotel && ( // # MUST REMOVE !s
               <Button
                 className="cursor-pointer mt-4 w-full md:w-auto p-5 text-md"
                 onClick={() => setView("view")}
@@ -915,15 +917,123 @@ function ChooseFlightPage() {
             <ArrowLeft />
             Back
           </Button>
-          <div>
-            <h1 className="uppercase">{location} Trip</h1>
+
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold uppercase">
+              {location} TRIP {departureDate?.getFullYear()}
+            </h1>
+            <p className="text-muted-foreground">
+              {departureDate?.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}{" "}
+              --&gt;{" "}
+              {returnDate?.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h2 className="text-md md:text-xl font-semibold mb-2">Flights</h2>
+
+            <p>
+              Outbound: {selectedDepFlight?.flights[0]?.departure_airport?.name}{" "}
+              - {selectedDepFlight?.flights[0]?.arrival_airport?.name} (
+              {Math.floor((selectedDepFlight?.total_duration ?? 0) / 60)}h{" "}
+              {(selectedDepFlight?.total_duration ?? 0) % 60}m)
+            </p>
+            <p>
+              Return: {selectedRetFlight?.flights[0]?.departure_airport?.name} -{" "}
+              {selectedRetFlight?.flights[0]?.arrival_airport?.name} (
+              {Math.floor((selectedRetFlight?.total_duration ?? 0) / 60)}h{" "}
+              {(selectedRetFlight?.total_duration ?? 0) % 60}m)
+            </p>
+            <p>
+              Total cost: $
+              {(selectedDepFlight?.price ?? 0) +
+                (selectedRetFlight?.price ?? 0)}
+            </p>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h2 className="text-md md:text-xl font-semibold mb-2">Hotels</h2>
+
+            <p>
+              Total cost: {selectedHotel?.total_rate?.lowest || "Unknown"} for{" "}
+              {Math.max(
+                0,
+                Math.ceil(
+                  ((returnDate?.getTime() ?? 0) -
+                    (departureDate?.getTime() ?? 0)) /
+                    (1000 * 60 * 60 * 24),
+                ),
+              )}{" "}
+              nights
+            </p>
+            <p>Check in: {selectedHotel?.check_in_time}</p>
+            <p>Check out: {selectedHotel?.check_out_time}</p>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h2 className="text-md md:text-xl font-semibold mb-2">Weather</h2>
+            {weather.length > 0 ? (
+              weather.map((day) => (
+                <p key={day.date}>
+                  {new Date(day.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  : {day.type}, {day.maxTemp}°/{day.minTemp}°
+                </p>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Weather forecast unavailable.
+              </p>
+            )}
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h2 className="text-md md:text-xl font-semibold mb-4">Events</h2>
+
+            {selectedEvents.length > 0 ? (
+              <div className="space-y-3">
+                {selectedEvents.map((event, index) => (
+                  <div
+                    key={index}
+                    className="rounded-md border bg-muted/20 p-3 space-y-1"
+                  >
+                    <p className="font-medium text-foreground">{event.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {event.address?.join(", ")}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {event.date?.when}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No events selected
+              </p>
+            )}
           </div>
         </div>
       )}
+
+      <footer className="text-center text-stone-500 mt-12">
+        <p>&copy; 2026 Voyage. All rights reserved.</p>
+      </footer>
 
       <Toaster />
     </div>
   );
 }
 
-export default ChooseFlightPage;
+export default NewTripPage;

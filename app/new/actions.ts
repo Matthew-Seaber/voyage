@@ -5,17 +5,20 @@ export async function fetchFlights(
   arrivalCode: string,
   targetDate: string
 ) {
-  if (!process.env.AVIATION_STACK_API_KEY) {
+  if (!process.env.SERPAPI_KEY) {
     throw new Error("API key missing");
   }
 
   const urlParams = new URLSearchParams({
-    access_key: process.env.AVIATION_STACK_API_KEY,
-    dep_iata: departureCode,
-    arr_iata: arrivalCode,
+    api_key: process.env.SERPAPI_KEY,
+    departure_id: departureCode,
+    arrival_id: arrivalCode,
+    currency: "USD",
+    type: "2",
+    outbound_date: targetDate,
   });
 
-  const targetUrl = `[URL HERE]`;
+  const targetUrl = `https://serpapi.com/search?engine=google_flights&${urlParams}`;
 
   const response = await fetch(targetUrl, {
     cache: 'no-store'
@@ -29,7 +32,13 @@ export async function fetchFlights(
 
   const data = await response.json();
   
-  const flights = data.data || [];
+  const flights = [];
+  if (data.best_flights) {
+    flights.push(...data.best_flights);
+  }
+  if (data.other_flights) {
+    flights.push(...data.other_flights);
+  }
   
   return flights;
 }

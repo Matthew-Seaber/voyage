@@ -16,7 +16,7 @@ export default function Home() {
           next trip.
         </h1>
         <Button className="text-xl p-6 gap-4" asChild>
-          <Link href="/signup">
+          <Link href="/new">
             <PlaneTakeoff />
             Get Started
           </Link>

@@ -8,7 +8,7 @@ export default function PageConfig({
   return (
     <>
       <Navbar />
-      <main className="max-w-400 mx-auto px-6 py-10">{children}</main>
+      <main className="w-full max-w-6xl mx-auto px-6 py-10 flex-1">{children}</main>
     </>
   );
 }

@@ -3,7 +3,7 @@
 export async function fetchFlights(
   departureCode: string,
   arrivalCode: string,
-  targetDate: string
+  targetDate: string,
 ) {
   if (!process.env.SERPAPI_KEY) {
     throw new Error("API key missing");
@@ -21,7 +21,7 @@ export async function fetchFlights(
   const targetUrl = `https://serpapi.com/search?engine=google_flights&${urlParams}`;
 
   const response = await fetch(targetUrl, {
-    cache: 'no-store'
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -31,7 +31,7 @@ export async function fetchFlights(
   }
 
   const data = await response.json();
-  
+
   const flights = [];
   if (data.best_flights) {
     flights.push(...data.best_flights);
@@ -39,6 +39,49 @@ export async function fetchFlights(
   if (data.other_flights) {
     flights.push(...data.other_flights);
   }
-  
+
   return flights;
+}
+
+export async function fetchHotels(
+  location: string,
+  checkInDate: string,
+  checkOutDate: string,
+  adults: number,
+  children: number,
+) {
+  if (!process.env.SERPAPI_KEY) {
+    throw new Error("API key missing");
+  }
+
+  const urlParams = new URLSearchParams({
+    api_key: process.env.SERPAPI_KEY,
+    q: location,
+    check_in_date: checkInDate,
+    check_out_date: checkOutDate,
+    currency: "USD",
+    adults: adults.toString(),
+    children: children.toString(),
+  });
+
+  const targetUrl = `https://serpapi.com/search?engine=google_hotels&${urlParams}`;
+
+  const response = await fetch(targetUrl, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("API Error:", errorText);
+    throw new Error("Failed to fetch hotel data");
+  }
+
+  const data = await response.json();
+
+  const hotels = [];
+  if (data.properties) {
+    hotels.push(...data.properties);
+  }
+
+  return hotels;
 }

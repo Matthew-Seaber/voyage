@@ -1,6 +1,6 @@
 import NavbarLinks from "@/components/navbar/NavbarLinks";
 import Logo from "@/components/navbar/Logo";
-import AuthButton from "@/components/navbar/AuthButton";
+import AuthButton from "@/components/navbar/NavButton";
 
 function Navbar() {
   return (

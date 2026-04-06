@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import Link from "next/link";
+import Image from "next/image";
 
 function getGuides() {
   const guidesDirectory = path.join(process.cwd(), "content/guides");
@@ -39,21 +40,35 @@ function GuidesPage() {
         Use the human-generated guides below to help shape your next trip.
       </h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {guides.map((guide) => (
           <Link
             key={guide.slug}
             href={`/guides/${guide.slug}`}
-            className="block border p-6 rounded-lg hover:shadow-md transition-shadow"
+            className="group block border overflow-hidden rounded-2xl hover:shadow-md transition-shadow"
           >
-            <h2 className="text-xl font-bold mb-2">{guide.title}</h2>
-            <p className="text-muted-foreground mb-2">{guide.description}</p>
-            <span className="text-xs px-2 py-1 bg-secondary rounded-md">
-              {guide.continent}
-            </span>
-            <p className="mt-4 text-xs text-gray-500">
-              {new Date(guide.creation_date).toLocaleDateString()}
-            </p>
+            <div className="relative h-48 w-full overflow-hidden">
+              <Image
+                src={`/guide-images/${guide.slug}.jpg`}
+                alt={guide.title}
+                loading="eager"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-2">{guide.title}</h2>
+              <p className="text-muted-foreground mb-2">{guide.description}</p>
+              <span className="text-xs px-2 py-1 bg-secondary rounded-md">
+                {guide.continent}
+              </span>
+
+              <p className="mt-4 text-xs text-gray-500">
+                {new Date(guide.creation_date).toLocaleDateString()}
+              </p>
+            </div>
           </Link>
         ))}
       </div>

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 async function getGuideInfo(articleName: string) {
   const guidesDirectory = path.join(process.cwd(), "content/guides");
@@ -18,7 +19,6 @@ async function getGuideInfo(articleName: string) {
       const { data, content } = matter(fileContents);
 
       return {
-        slug: data.slug,
         title: data.title,
         description: data.description,
         creation_date: data.creation_date,
@@ -27,6 +27,7 @@ async function getGuideInfo(articleName: string) {
         author_link: data.author_link,
         continent: data.continent,
         content: content,
+        image_caption: data.image_caption || "",
       };
     }
   }
@@ -77,6 +78,17 @@ async function ArticlePage({
         <span className="text-xs px-2 py-1 bg-secondary rounded-md">
           {guideData.continent}
         </span>
+
+        <Image
+          src={`/guide-images/${articleName}.jpg`}
+          alt={guideData.title}
+          loading="eager"
+          sizes="(max-width: 768px) 100vw, 540px"
+          className="my-4 h-auto w-full max-w-xl rounded-xl"
+          width={540}
+          height={400}
+        />
+        <p className="text-xs text-gray-500 mb-8">{guideData.image_caption}</p>
 
         <div className="mt-8 prose prose-slate dark:prose-invert max-w-none">
           {" "}

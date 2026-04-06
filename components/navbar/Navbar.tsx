@@ -4,7 +4,10 @@ import AuthButton from "@/components/navbar/NavButton";
 
 function Navbar() {
   return (
-    <nav className="border-b">
+    <nav
+      data-smooth-cursor="ignore"
+      className="border rounded-3xl sticky top-2 mx-2 z-50 bg-background/80 backdrop-blur-sm"
+    >
       <div className="max-w-400 mx-auto px-6 flex justify-between items-center py-6 gap-4">
         <Logo />
         <NavbarLinks />

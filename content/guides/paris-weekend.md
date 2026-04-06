@@ -6,6 +6,7 @@ last_updated: "2026-04-03"
 author: "Matthew Seaber"
 author_link: "https://www.instagram.com/_matthewseaber_/"
 continent: "Europe"
+image_caption: "Canal Saint-Martin, Paris. Photo: Pixabay."
 ---
 
 Paris, France contains some of the world's most recognisable landmarks, from the Eiffel Tower to the Louvre, there's something for all ages to enjoy. I've collated some of the best activites into a packed 3-day itinerary, helping you to make the most of your visit. 🍷

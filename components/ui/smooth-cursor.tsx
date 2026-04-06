@@ -20,6 +20,8 @@ export interface SmoothCursorProps {
 
 const DESKTOP_POINTER_QUERY = "(any-hover: hover) and (any-pointer: fine)"
 const CUSTOM_CURSOR_CLASS = "custom-cursor-active"
+const CUSTOM_CURSOR_PAUSED_CLASS = "custom-cursor-paused"
+const PAUSE_SELECTOR = '[data-smooth-cursor="ignore"]'
 
 function isTrackablePointer(pointerType: string) {
   return pointerType !== "touch"
@@ -103,6 +105,7 @@ export function SmoothCursor({
   const accumulatedRotation = useRef(0)
   const [isEnabled, setIsEnabled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
   const cursorX = useSpring(0, springConfig)
   const cursorY = useSpring(0, springConfig)
@@ -161,6 +164,18 @@ export function SmoothCursor({
 
     const smoothPointerMove = (e: PointerEvent) => {
       if (!isTrackablePointer(e.pointerType)) {
+        return
+      }
+
+      const eventTarget = e.target
+      const shouldPause =
+        eventTarget instanceof Element &&
+        eventTarget.closest(PAUSE_SELECTOR) !== null
+
+      setIsPaused((prev) => (prev === shouldPause ? prev : shouldPause))
+
+      if (shouldPause) {
+        setIsVisible(false)
         return
       }
 
@@ -228,6 +243,19 @@ export function SmoothCursor({
       }
     }
   }, [cursorX, cursorY, rotation, scale, isEnabled])
+
+  useEffect(() => {
+    if (!isEnabled) {
+      document.documentElement.classList.remove(CUSTOM_CURSOR_PAUSED_CLASS)
+      return
+    }
+
+    document.documentElement.classList.toggle(CUSTOM_CURSOR_PAUSED_CLASS, isPaused)
+
+    return () => {
+      document.documentElement.classList.remove(CUSTOM_CURSOR_PAUSED_CLASS)
+    }
+  }, [isEnabled, isPaused])
 
   if (!isEnabled) {
     return null

@@ -18,7 +18,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowLeft, Check, ChevronDownIcon, Loader2, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDownIcon,
+  Loader2,
+  Printer,
+  Star,
+} from "lucide-react";
 import {
   fetchFlights,
   fetchHotels,
@@ -159,6 +166,10 @@ function NewTripPage() {
   const [hotels, setHotels] = React.useState<HotelData[]>([]);
   const [events, setEvents] = React.useState<EventData[]>([]);
   const [weather, setWeather] = React.useState<WeatherData[]>([]);
+
+  function handlePrint() {
+    window.print();
+  }
 
   async function getFlightData() {
     if (!departureDate || !returnDate || !departureCode || !arrivalCode) {
@@ -913,116 +924,136 @@ function NewTripPage() {
         </>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <Button variant="outline" onClick={() => setView("create")}>
-            <ArrowLeft />
-            Back
-          </Button>
-
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold uppercase">
-              {location} TRIP {departureDate?.getFullYear()}
-            </h1>
-            <p className="text-muted-foreground">
-              {departureDate?.toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}{" "}
-              --&gt;{" "}
-              {returnDate?.toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}
-            </p>
+          <div id="top-bar" className="flex items-center gap-2 justify-between">
+            <Button variant="outline" onClick={() => setView("create")}>
+              <ArrowLeft />
+              Back
+            </Button>
+            <Button className="ml-auto" onClick={handlePrint}>
+              <Printer />
+              Print
+            </Button>
           </div>
 
-          <div className="border rounded-lg p-4">
-            <h2 className="text-md md:text-xl font-semibold mb-2">Flights</h2>
+          <div id="printable-content" className="space-y-6">
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold uppercase">
+                {location} TRIP {departureDate?.getFullYear()}
+              </h1>
+              <p className="text-muted-foreground">
+                {departureDate?.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}{" "}
+                --&gt;{" "}
+                {returnDate?.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
 
-            <p>
-              Outbound: {selectedDepFlight?.flights[0]?.departure_airport?.name}{" "}
-              - {selectedDepFlight?.flights[0]?.arrival_airport?.name} (
-              {Math.floor((selectedDepFlight?.total_duration ?? 0) / 60)}h{" "}
-              {(selectedDepFlight?.total_duration ?? 0) % 60}m)
-            </p>
-            <p>
-              Return: {selectedRetFlight?.flights[0]?.departure_airport?.name} -{" "}
-              {selectedRetFlight?.flights[0]?.arrival_airport?.name} (
-              {Math.floor((selectedRetFlight?.total_duration ?? 0) / 60)}h{" "}
-              {(selectedRetFlight?.total_duration ?? 0) % 60}m)
-            </p>
-            <p>
-              Total cost: $
-              {(selectedDepFlight?.price ?? 0) +
-                (selectedRetFlight?.price ?? 0)}
-            </p>
-          </div>
+            <div className="border rounded-lg p-4">
+              <h2 className="text-md md:text-xl font-semibold mb-2">Flights</h2>
 
-          <div className="border rounded-lg p-4">
-            <h2 className="text-md md:text-xl font-semibold mb-2">Hotels</h2>
+              <p>
+                Outbound:{" "}
+                {selectedDepFlight?.flights[0]?.departure_airport?.name} -{" "}
+                {selectedDepFlight?.flights[0]?.arrival_airport?.name} (
+                {Math.floor((selectedDepFlight?.total_duration ?? 0) / 60)}h{" "}
+                {(selectedDepFlight?.total_duration ?? 0) % 60}m)
+              </p>
+              <p>
+                Return: {selectedRetFlight?.flights[0]?.departure_airport?.name}{" "}
+                - {selectedRetFlight?.flights[0]?.arrival_airport?.name} (
+                {Math.floor((selectedRetFlight?.total_duration ?? 0) / 60)}h{" "}
+                {(selectedRetFlight?.total_duration ?? 0) % 60}m)
+              </p>
+              <p>
+                Total cost: $
+                {(selectedDepFlight?.price ?? 0) +
+                  (selectedRetFlight?.price ?? 0)}
+              </p>
+            </div>
 
-            <p>
-              Total cost: {selectedHotel?.total_rate?.lowest || "Unknown"} for{" "}
-              {Math.max(
-                0,
-                Math.ceil(
-                  ((returnDate?.getTime() ?? 0) -
-                    (departureDate?.getTime() ?? 0)) /
-                    (1000 * 60 * 60 * 24),
-                ),
-              )}{" "}
-              nights
-            </p>
-            <p>Check in: {selectedHotel?.check_in_time}</p>
-            <p>Check out: {selectedHotel?.check_out_time}</p>
-          </div>
+            <div className="border rounded-lg p-4">
+              <h2 className="text-md md:text-xl font-semibold mb-2">Hotels</h2>
 
-          <div className="border rounded-lg p-4">
-            <h2 className="text-md md:text-xl font-semibold mb-2">Weather</h2>
-            {weather.length > 0 ? (
-              weather.map((day) => (
-                <p key={day.date}>
-                  {new Date(day.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                  : {day.type}, {day.maxTemp}°/{day.minTemp}°
+              <p>
+                Total cost: {selectedHotel?.total_rate?.lowest || "Unknown"} for{" "}
+                {Math.max(
+                  0,
+                  Math.ceil(
+                    ((returnDate?.getTime() ?? 0) -
+                      (departureDate?.getTime() ?? 0)) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                )}{" "}
+                nights
+              </p>
+              <p>Check in: {selectedHotel?.check_in_time}</p>
+              <p>Check out: {selectedHotel?.check_out_time}</p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <h2 className="text-md md:text-xl font-semibold mb-2">Weather</h2>
+              {weather.length > 0 ? (
+                weather.map((day) => (
+                  <p key={day.date}>
+                    {new Date(day.date).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    : {day.type}, {day.maxTemp}°/{day.minTemp}°
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Weather forecast unavailable.
                 </p>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Weather forecast unavailable.
-              </p>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="border rounded-lg p-4">
-            <h2 className="text-md md:text-xl font-semibold mb-4">Events</h2>
+            <div className="border rounded-lg p-4">
+              <h2 className="text-md md:text-xl font-semibold mb-4">Events</h2>
 
-            {selectedEvents.length > 0 ? (
-              <div className="space-y-3">
-                {selectedEvents.map((event, index) => (
-                  <div
-                    key={index}
-                    className="rounded-md border bg-muted/20 p-3 space-y-1"
-                  >
-                    <p className="font-medium text-foreground">{event.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {event.address?.join(", ")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {event.date?.when}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No events selected
-              </p>
-            )}
+              {selectedEvents.length > 0 ? (
+                <div className="space-y-3">
+                  {selectedEvents.map((event, index) => (
+                    <div
+                      key={index}
+                      className="rounded-md border bg-muted/20 p-3 space-y-1"
+                    >
+                      <p className="font-medium text-foreground">
+                        {event.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {event.address?.join(", ")}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {event.date?.when}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No events selected
+                </p>
+              )}
+            </div>
+
+            <h3 className="font-semibold">
+              Total cost (excluding events): $
+              {(
+                (selectedDepFlight?.price ?? 0) +
+                (selectedRetFlight?.price ?? 0) +
+                (selectedHotel?.total_rate?.extracted_lowest ?? 0)
+              ).toFixed(2)}
+            </h3>
           </div>
         </div>
       )}
@@ -1030,6 +1061,37 @@ function NewTripPage() {
       <footer className="text-center text-stone-500 mt-12">
         <p>&copy; 2026 Voyage. All rights reserved.</p>
       </footer>
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+
+          #printable-content *,
+          footer * {
+            visibility: visible;
+          }
+
+          #printable-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+
+          footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+          }
+
+          #top-bar {
+            display: none;
+          }
+        }
+      `}</style>
 
       <Toaster />
     </div>

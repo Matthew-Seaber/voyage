@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import { PlaneTakeoff } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +26,8 @@ export default function Home() {
       <footer className="text-center text-stone-500 mt-80">
         <p>&copy; 2026 Voyage. All rights reserved.</p>
       </footer>
+
+      <SmoothCursor />
     </div>
   );
 }

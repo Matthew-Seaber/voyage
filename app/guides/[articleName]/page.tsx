@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import ShareButton from "@/components/button-components/ShareButton";
 
 async function getGuideInfo(articleName: string) {
   const guidesDirectory = path.join(process.cwd(), "content/guides");
@@ -62,12 +63,18 @@ async function ArticlePage({
 
   return (
     <div>
-      <Link href="/guides">
-        <Button variant="outline" className="cursor-pointer">
-          <ArrowLeft />
-          Back
-        </Button>
-      </Link>
+      <div className="flex items-center gap-2 justify-between">
+        <Link href="/guides">
+          <Button variant="outline" className="cursor-pointer">
+            <ArrowLeft />
+            Back
+          </Button>
+        </Link>
+        <ShareButton
+          title={guideData.title}
+          description={guideData.description}
+        />
+      </div>
 
       <article>
         <h1 className="text-3xl font-bold my-4">{guideData.title}</h1>

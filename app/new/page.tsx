@@ -24,6 +24,7 @@ import {
   ChevronDownIcon,
   Loader2,
   Printer,
+  Share,
   Star,
 } from "lucide-react";
 import {
@@ -169,6 +170,36 @@ function NewTripPage() {
 
   function handlePrint() {
     window.print();
+  }
+
+  async function handleShare() {
+    const summary = `${location} Trip ${departureDate?.getFullYear()}
+Dates: ${departureDate?.toLocaleDateString("en-US")} to ${returnDate?.toLocaleDateString("en-US")}
+Flights: $${(selectedDepFlight?.price ?? 0) + (selectedRetFlight?.price ?? 0)} total
+Hotel: ${selectedHotel?.name} (${selectedHotel?.total_rate?.lowest || "Unknown"})
+Total estimated cost: $${(
+      (selectedDepFlight?.price ?? 0) +
+      (selectedRetFlight?.price ?? 0) +
+      (selectedHotel?.total_rate?.extracted_lowest ?? 0)
+    ).toFixed(2)}
+    
+Created with Voyage - your new favorite travel planner!`;
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      if (navigator.share) {
+        await navigator.share({
+          title: `${location} TRIP ${departureDate?.getFullYear()}`,
+          text: summary,
+        });
+      } else {
+        await navigator.clipboard.writeText(summary);
+        toast.success("Trip details copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      toast.error("Sharing failed. Please try again later.");
+    }
   }
 
   async function getFlightData() {
@@ -929,10 +960,16 @@ function NewTripPage() {
               <ArrowLeft />
               Back
             </Button>
-            <Button className="ml-auto" onClick={handlePrint}>
-              <Printer />
-              Print
-            </Button>
+            <div className="ml-auto flex gap-2">
+              <Button variant="outline" onClick={handlePrint}>
+                <Printer />
+                Print
+              </Button>
+              <Button onClick={handleShare}>
+                <Share />
+                Share
+              </Button>
+            </div>
           </div>
 
           <div id="printable-content" className="space-y-6">

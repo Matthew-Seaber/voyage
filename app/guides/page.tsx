@@ -13,7 +13,10 @@ function getGuides() {
     .map((fileName) => {
       const filePath = path.join(guidesDirectory, fileName);
       const fileContents = fs.readFileSync(filePath, "utf8");
-      const { data } = matter(fileContents);
+      const { data, content } = matter(fileContents);
+
+      const wordCount = content.split(/\s+/g).length;
+      const readingTime = Math.ceil(wordCount / 200);
 
       return {
         slug: fileName.slice(0, -3), // Removes the .md extension from the URL
@@ -22,6 +25,7 @@ function getGuides() {
         creation_date: data.creation_date,
         last_updated: data.last_updated,
         continent: data.continent,
+        readingTime,
       };
     })
     .sort(
@@ -45,7 +49,7 @@ function GuidesPage() {
           <Link
             key={guide.slug}
             href={`/guides/${guide.slug}`}
-            className="group block border overflow-hidden rounded-2xl hover:shadow-md transition-shadow"
+            className="group relative block border overflow-hidden rounded-2xl hover:shadow-md transition-shadow"
           >
             <div className="relative h-48 w-full overflow-hidden">
               <Image
@@ -56,6 +60,12 @@ function GuidesPage() {
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
+            </div>
+
+            <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md z-2">
+              <p>
+                {guide.readingTime} min{guide.readingTime !== 1 ? "s" : ""}
+              </p>
             </div>
 
             <div className="p-6">

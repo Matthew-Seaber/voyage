@@ -8,6 +8,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import ShareButton from "@/components/button-components/ShareButton";
+import ScrollTopButton from "@/components/article-components/ScrollTopButton";
+import ScrollProgressBar from "@/components/article-components/ScrollProgressBar";
 
 async function getGuideInfo(articleName: string) {
   const guidesDirectory = path.join(process.cwd(), "content/guides");
@@ -36,6 +38,35 @@ async function getGuideInfo(articleName: string) {
   return null;
 }
 
+function getOtherGuides(currentArticle: string) {
+  const guidesDirectory = path.join(process.cwd(), "content/guides");
+  const files = fs.readdirSync(guidesDirectory);
+
+  return files
+    .filter((file) => file.endsWith(".md"))
+    .map((fileName) => {
+      const filePath = path.join(guidesDirectory, fileName);
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      const { data, content } = matter(fileContents);
+
+      const wordCount = content.split(/\s+/g).length;
+      const readingTime = Math.ceil(wordCount / 200);
+
+      return {
+        slug: fileName.slice(0, -3), // Removes the .md extension from the URL
+        title: data.title,
+        description: data.description,
+        creation_date: data.creation_date,
+        last_updated: data.last_updated,
+        continent: data.continent,
+        readingTime,
+      };
+    })
+    .filter((guide) => guide.slug !== currentArticle)
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 4); // Limits to 4 other guides
+}
+
 async function ArticlePage({
   params,
 }: {
@@ -44,6 +75,7 @@ async function ArticlePage({
   const { articleName } = await params;
 
   const guideData = await getGuideInfo(articleName);
+  const otherGuides = getOtherGuides(articleName);
 
   if (!guideData) {
     return (
@@ -63,6 +95,8 @@ async function ArticlePage({
 
   return (
     <div>
+      <ScrollProgressBar />
+
       <div className="flex items-center gap-2 justify-between">
         <Link href="/guides">
           <Button variant="outline" className="cursor-pointer">
@@ -116,6 +150,49 @@ async function ArticlePage({
           on {new Date(guideData.creation_date).toLocaleDateString()}
         </p>
       </article>
+
+      <h3 className="mt-20 mb-8 text-2xl md:text-3xl font-semibold">Up Next</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {otherGuides.map((guide) => (
+          <Link
+            key={guide.slug}
+            href={`/guides/${guide.slug}`}
+            className="group relative block border overflow-hidden rounded-2xl hover:shadow-md transition-shadow"
+          >
+            <div className="relative h-48 w-full overflow-hidden">
+              <Image
+                src={`/guide-images/${guide.slug}.jpg`}
+                alt={guide.title}
+                loading="eager"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+
+            <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md z-2">
+              <p>
+                {guide.readingTime} min{guide.readingTime !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-2">{guide.title}</h2>
+              <p className="text-muted-foreground mb-2">{guide.description}</p>
+              <span className="text-xs px-2 py-1 bg-secondary rounded-md">
+                {guide.continent}
+              </span>
+
+              <p className="mt-4 text-xs text-gray-500">
+                {new Date(guide.creation_date).toLocaleDateString()}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <ScrollTopButton />
 
       <footer className="text-center text-stone-500 mt-20">
         <p>&copy; 2026 Voyage. All rights reserved.</p>

@@ -9,6 +9,8 @@ Use the live demo at the bottom of the README
 - Run `npm install` to install the required dependencies  
 - Run `npm run dev` to start a local development server (default: `http://localhost:3000`)
 
+Feel free to create a pull request if you'd like to contribute to the project or have any suggestions for new features!
+
 ## 🎨 Features
 - Flight planner
 - Hotel search
@@ -20,4 +22,4 @@ Use the live demo at the bottom of the README
 The APIs used in this project have limited free usage so if the live demo is not working, please try again later or run the project locally.
 
 ## 🔗 Live Demo
-👉 [Voyage website](https://voyage-umber.vercel.app/)
+👉 [Voyage website](https://voyage-umber.vercel.app/) (hosted on Vercel using Next.js)

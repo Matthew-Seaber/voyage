@@ -2,6 +2,8 @@
 
 Plan your next trip away from start to finish with Voyage, the ultimate travel planning app!
 
+[Site preview](/public/site-preview.jpg)
+
 ## 🛠 How to access
 Use the live demo at the bottom of the README
 ### OR

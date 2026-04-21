@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SmoothCursor } from "@/components/ui/smooth-cursor";
-import { PlaneTakeoff } from "lucide-react";
+import { PlaneTakeoff, CalendarDays, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import fs from "fs";
 import path from "path";
@@ -38,22 +38,32 @@ export default function Home() {
 
   return (
     <div>
-      <main className="text-center">
-        <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-jakarta tracking-tighter my-4">
-          The ultimate travel planner for
-        </h1>
-        <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-jakarta tracking-tighter mb-12">
-          your next trip.
-        </h1>
+      <main className="text-center selection:bg-foreground/20">
+        <div className="font-bold font-fraunces tracking-tighter">
+          <h1 className="hidden sm:block text-4xl md:text-6xl lg:text-7xl my-4">
+            The ultimate travel planner for
+          </h1>
+          <h1 className="hidden sm:block text-4xl md:text-6xl lg:text-7xl mb-12">
+            your next trip.
+          </h1>
+          <h1 className="sm:hidden text-4xl my-4">
+            The ultimate travel planner for your next trip.
+          </h1>
+        </div>
 
-        <Button className="text-xl p-6 gap-4" asChild>
+        <h4 className="text-lg font-semibold mb-6">
+          Click the button below to plan your next trip away or check out the
+          guides below for inspiration!
+        </h4>
+
+        <Button className="text-xl px-6 py-7 gap-4 rounded-xl" asChild>
           <Link href="/new">
             <PlaneTakeoff />
             Get Started
           </Link>
         </Button>
 
-        <h3 className="mt-20 text-2xl md:text-3xl font-semibold">
+        <h3 className="mt-20 text-2xl md:text-3xl font-semibold font-fraunces">
           Discover the best travel guides
         </h3>
 
@@ -80,19 +90,23 @@ export default function Home() {
                 <p className="text-muted-foreground mb-2">
                   {guide.description}
                 </p>
-                <span className="text-xs px-2 py-1 bg-secondary rounded-md">
+                <span className="text-xs px-2 py-1 bg-secondary rounded-md text-gray-800">
                   {guide.continent}
                 </span>
-                <p className="mt-4 text-xs text-gray-500">
-                  {new Date(guide.creation_date).toLocaleDateString()}
-                </p>
+                <div className="flex gap-1 mt-4 text-xs text-gray-500">
+                  <CalendarDays className="h-4" />
+                  <p>{new Date(guide.creation_date).toLocaleDateString()}</p>
+                </div>
               </div>
             </Link>
           ))}
         </div>
 
-        <Button className="text-md p-5 mt-8" asChild>
-          <Link href="/guides">See All Guides</Link>
+        <Button className="text-md p-6 mt-8 bg-foreground" asChild>
+          <Link href="/guides">
+            See All Guides
+            <ArrowRight className="h-4" />
+          </Link>
         </Button>
       </main>
       <footer className="text-center text-stone-500 mt-20">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Geist, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import PageConfig from "@/components/page-config";
 
@@ -10,6 +10,11 @@ const geistSans = Geist({
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
+  subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
 });
 
@@ -25,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${plusJakartaSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${plusJakartaSans.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         <PageConfig>{children}</PageConfig>
       </body>

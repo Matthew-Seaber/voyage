@@ -4,9 +4,10 @@ import { PlaneTakeoff } from "lucide-react"
 function Logo() {
   return (
     <Link href="/">
-      <span>
+      <div className="flex gap-3">
         <PlaneTakeoff />
-      </span>
+        <p className="text-xl font-bold font-fraunces">Voyage</p>
+      </div>
     </Link>
   );
 }

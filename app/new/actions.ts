@@ -43,6 +43,51 @@ export async function fetchFlights(
   return flights;
 }
 
+export async function fetchRoundTripFlights(
+  departureCode: string,
+  arrivalCode: string,
+  targetOutboundDate: string,
+  targetReturnDate: string,
+) {
+  if (!process.env.SERPAPI_KEY) {
+    throw new Error("API key missing");
+  }
+
+  const urlParams = new URLSearchParams({
+    api_key: process.env.SERPAPI_KEY,
+    departure_id: departureCode,
+    arrival_id: arrivalCode,
+    currency: "USD",
+    type: "1",
+    outbound_date: targetOutboundDate,
+    return_date: targetReturnDate,
+  });
+
+  const targetUrl = `https://serpapi.com/search?engine=google_flights&${urlParams}`;
+
+  const response = await fetch(targetUrl, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("API Error:", errorText);
+    throw new Error("Failed to fetch flight data");
+  }
+
+  const data = await response.json();
+
+  const flights = [];
+  if (data.best_flights) {
+    flights.push(...data.best_flights);
+  }
+  if (data.other_flights) {
+    flights.push(...data.other_flights);
+  }
+
+  return flights;
+}
+
 export async function fetchHotels(
   location: string,
   checkInDate: string,
@@ -121,7 +166,8 @@ export async function fetchWeather(
     for (const item of data.list) {
       const date = item.dt_txt.split(" ")[0];
 
-      if (date < startDate || date > endDate) { // Ensures all returned data is within the inputted range
+      if (date < startDate || date > endDate) {
+        // Ensures all returned data is within the inputted range
         continue;
       }
 
@@ -154,8 +200,8 @@ export async function fetchWeather(
       },
       {},
     );
-    const mostFrequentWeather = Object.keys(counts).reduce((a, b) =>
-      counts[a] > counts[b] ? a : b, // Decides on what weather type to show for each day
+    const mostFrequentWeather = Object.keys(counts).reduce(
+      (a, b) => (counts[a] > counts[b] ? a : b), // Decides on what weather type to show for each day
     );
 
     return {

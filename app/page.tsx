@@ -51,7 +51,7 @@ export default function Home() {
           </h1>
         </div>
 
-        <h4 className="text-lg font-semibold mb-6">
+        <h4 className="text-md md:text-lg font-semibold mb-6">
           Click the button below to plan your next trip away or check out the
           guides below for inspiration!
         </h4>

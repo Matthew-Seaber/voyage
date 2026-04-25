@@ -53,7 +53,7 @@
 
 :root {
   --background: #fef9f0;
-  --foreground: #13443e;
+  --foreground: rgb(26, 90, 83);
   --card: #fef9f0;
   --card-foreground: oklch(0.145 0 0);
   --popover: #fef9f0;

@@ -29,10 +29,13 @@ import {
 } from "lucide-react";
 import {
   fetchFlights,
+  fetchRoundTripFlights,
   fetchHotels,
   fetchEvents,
   fetchWeather,
 } from "./actions";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface WeatherData {
   date: string;
@@ -139,6 +142,7 @@ function NewTripPage() {
   const [returnDate, setReturnDate] = React.useState<Date>();
   const [departureCode, setDepartureCode] = React.useState("");
   const [arrivalCode, setArrivalCode] = React.useState("");
+  const [roundTrip, setRoundTrip] = React.useState(false);
   const [location, setLocation] = React.useState("");
   const [adults, setAdults] = React.useState(1);
   const [children, setChildren] = React.useState(0);
@@ -164,6 +168,7 @@ function NewTripPage() {
     departure: [],
     return: [],
   });
+  const [roundTripFlights, setRoundTripFlights] = React.useState<Flight[]>([]);
   const [hotels, setHotels] = React.useState<HotelData[]>([]);
   const [events, setEvents] = React.useState<EventData[]>([]);
   const [weather, setWeather] = React.useState<WeatherData[]>([]);
@@ -217,6 +222,7 @@ Created with Voyage - your new favorite travel planner!`;
 
     setFlightsLoading(true);
     setFlights({ departure: [], return: [] });
+    setRoundTripFlights([]);
 
     try {
       const departureDateString = formatDate(departureDate);
@@ -236,12 +242,25 @@ Created with Voyage - your new favorite travel planner!`;
         returnDateString,
       );
 
+      // Fetch round trip flights
+      const roundTripFlights = await fetchRoundTripFlights(
+        departureCode,
+        arrivalCode,
+        departureDateString,
+        returnDateString,
+      );
+
       setFlights({
         departure: departureFlights || [],
         return: returnFlights || [],
       });
+      setRoundTripFlights(roundTripFlights || []);
 
-      if (!departureFlights?.length && !returnFlights?.length) {
+      if (
+        !departureFlights?.length &&
+        !returnFlights?.length &&
+        !roundTripFlights?.length
+      ) {
         toast.info("No flights were found for the selected dates.");
       }
 
@@ -422,7 +441,7 @@ Created with Voyage - your new favorite travel planner!`;
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -474,6 +493,16 @@ Created with Voyage - your new favorite travel planner!`;
                   </Popover>
                 </div>
 
+                <div className="flex space-x-2 mb-6">
+                  <Switch
+                    id="round-trip"
+                    defaultChecked={roundTrip}
+                    checked={roundTrip}
+                    onCheckedChange={setRoundTrip}
+                  />
+                  <Label htmlFor="round-trip">Include round trip flights</Label>
+                </div>
+
                 <div className="mt-4 flex flex-col items-start">
                   <Button
                     className="w-full sm:w-auto cursor-pointer"
@@ -486,6 +515,75 @@ Created with Voyage - your new favorite travel planner!`;
                     Check flights
                   </Button>
                 </div>
+
+                {roundTripFlights.length > 0 && roundTrip ? (
+                  <div className="mt-8">
+                    <h2 className="text-xl font-bold mb-4">
+                      Round Trip Flights
+                    </h2>
+                    <div className="space-y-4">
+                      {roundTripFlights.slice(0, 5).map((flight, idx) => (
+                        <div
+                          key={idx}
+                          className={`cursor-pointer border p-4 rounded-md shadow-sm hover:shadow-md transition-shadow ${selectedDepFlight === flight ? "border-primary" : ""}`}
+                          onClick={() => {
+                            setSelectedDepFlight(flight);
+                            setSelectedRetFlight(flight);
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <img
+                                src={flight.airline_logo}
+                                alt="Airline logo"
+                                className="h-8 w-8 object-contain shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <p className="font-semibold">${flight.price}</p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {flight.flights
+                                    .map((flght) => flght.airline)
+                                    .join(", ")}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p>
+                                Outbound:{" "}
+                                {Math.floor(flight.total_duration / 60)}h{" "}
+                                {flight.total_duration % 60}m (
+                                {
+                                  flight.flights[0].departure_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                -{" "}
+                                {
+                                  flight.flights[0].arrival_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                local time)
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {flight.flights.length > 1
+                                  ? `${flight.flights.length - 1} stop${flight.flights.length - 1 === 1 ? "" : "s"}`
+                                  : "Direct"}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Inbound data currently unknown
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : flightsFetched && roundTrip ? (
+                  <p className="mt-4 text-muted-foreground">
+                    No round trip flights found for the selected dates.
+                  </p>
+                ) : null}
 
                 {flights.departure.length > 0 ? (
                   <div className="mt-8">
@@ -518,11 +616,23 @@ Created with Voyage - your new favorite travel planner!`;
                             <div className="text-right shrink-0">
                               <p>
                                 {Math.floor(flight.total_duration / 60)}h{" "}
-                                {flight.total_duration % 60}m
+                                {flight.total_duration % 60}m (
+                                {
+                                  flight.flights[0].departure_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                -{" "}
+                                {
+                                  flight.flights[0].arrival_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                local time)
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {flight.flights.length > 1
-                                  ? `${flight.flights.length - 1} stops`
+                                  ? `${flight.flights.length - 1} stop${flight.flights.length - 1 === 1 ? "" : "s"}`
                                   : "Direct"}
                               </p>
                             </div>
@@ -566,11 +676,23 @@ Created with Voyage - your new favorite travel planner!`;
                             <div className="text-right shrink-0">
                               <p>
                                 {Math.floor(flight.total_duration / 60)}h{" "}
-                                {flight.total_duration % 60}m
+                                {flight.total_duration % 60}m (
+                                {
+                                  flight.flights[0].departure_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                -{" "}
+                                {
+                                  flight.flights[0].arrival_airport.time.split(
+                                    " ",
+                                  )[1]
+                                }{" "}
+                                local time)
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {flight.flights.length > 1
-                                  ? `${flight.flights.length - 1} stops`
+                                  ? `${flight.flights.length - 1} stop${flight.flights.length - 1 === 1 ? "" : "s"}`
                                   : "Direct"}
                               </p>
                             </div>

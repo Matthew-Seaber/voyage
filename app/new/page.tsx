@@ -23,6 +23,7 @@ import {
   Check,
   ChevronDownIcon,
   Loader2,
+  PlaneTakeoff,
   Printer,
   Share,
   Star,
@@ -388,6 +389,32 @@ Created with Voyage - your new favorite travel planner!`;
       localDate.getMinutes() - localDate.getTimezoneOffset(),
     );
     return localDate.toISOString().split("T")[0];
+  }
+
+  function formatEventTime(time: string) {
+    let timePart = time.split(", ")[2] || time;
+
+    const morningIndex = timePart.indexOf("AM");
+    const afternoonIndex = timePart.indexOf("PM");
+
+    if (morningIndex !== -1) {
+      timePart = timePart.slice(0, morningIndex + 2);
+    } else if (afternoonIndex !== -1) {
+      timePart = timePart.slice(0, afternoonIndex + 2);
+    }
+
+    return timePart;
+  }
+
+  function formatEventDate(date: string) {
+    const year = new Date().getFullYear();
+    const dateFormatted = new Date(`${year} ${date}`);
+
+    return dateFormatted.toLocaleDateString(undefined, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
   }
 
   return (
@@ -922,8 +949,8 @@ Created with Voyage - your new favorite travel planner!`;
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-4 pb-8">
-                <h2 className="text-xl font-bold mb-4">Weather Forecast</h2>
-                <p className="text-muted-foreground">
+                <h2 className="text-xl font-bold mb-2">Weather Forecast</h2>
+                <p className="text-muted-foreground mb-4">
                   Use the weather forecast to plan some activities.
                 </p>
 
@@ -986,7 +1013,11 @@ Created with Voyage - your new favorite travel planner!`;
 
                 {events.length > 0 ? (
                   <div className="mt-8">
-                    <h2 className="text-xl font-bold mb-4">Available Events</h2>
+                    <h2 className="text-xl font-bold mb-2">Available Events</h2>
+                    <p className="text-muted-foreground mb-4">
+                      Make sure to double check events don&apos;t clash!
+                    </p>
+
                     <div className="space-y-4">
                       {events.slice(0, 10).map((event, idx) => (
                         <div
@@ -1064,16 +1095,14 @@ Created with Voyage - your new favorite travel planner!`;
             </AccordionItem>
           </Accordion>
 
-          {selectedDepFlight &&
-            selectedRetFlight &&
-            selectedHotel && ( // # MUST REMOVE !s
-              <Button
-                className="cursor-pointer mt-4 w-full md:w-auto p-5 text-md"
-                onClick={() => setView("view")}
-              >
-                Create schedule
-              </Button>
-            )}
+          {selectedDepFlight && selectedRetFlight && selectedHotel && (
+            <Button
+              className="cursor-pointer mt-4 w-full md:w-auto p-5 text-md"
+              onClick={() => setView("view")}
+            >
+              Create itinerary
+            </Button>
+          )}
         </>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1205,7 +1234,7 @@ Created with Voyage - your new favorite travel planner!`;
               )}
             </div>
 
-            <h3 className="font-semibold">
+            <h3 className="font-semibold pb-16">
               Total cost (excluding events): $
               {(
                 (selectedDepFlight?.price ?? 0) +
@@ -1213,6 +1242,103 @@ Created with Voyage - your new favorite travel planner!`;
                 (selectedHotel?.total_rate?.extracted_lowest ?? 0)
               ).toFixed(2)}
             </h3>
+
+            <h2 className="text-lg md:text-2xl font-bold mb-4">
+              Full Schedule
+            </h2>
+
+            <div className="border rounded-lg p-4">
+              <div className="space-y-3">
+                <h3 className="text-md md:text-xl font-semibold">
+                  {departureDate?.toLocaleDateString(undefined, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </h3>
+                <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+                  <p className="font-medium text-foreground">Outbound flight</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDepFlight?.flights[0]?.departure_airport?.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {
+                      selectedDepFlight?.flights[0]?.departure_airport.time.split(
+                        " ",
+                      )[1]
+                    }
+                  </p>
+                </div>
+                <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+                  <p className="font-medium text-foreground">Hotel check-in</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedHotel?.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    From {selectedHotel?.check_in_time}
+                  </p>
+                </div>
+                {selectedEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedEvents.map((event, index) => (
+                      <>
+                        <h3 className="text-md md:text-xl font-semibold">
+                          {formatEventDate(event.date?.start_date)}
+                        </h3>
+                        <div
+                          key={index}
+                          className="rounded-md border bg-muted/20 p-3 space-y-1"
+                        >
+                          <p className="font-medium text-foreground">
+                            {event.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {event.address?.join(", ")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatEventTime(event.date?.when)}
+                          </p>
+                        </div>
+                      </>
+                    ))}
+                  </div>
+                ) : null}
+                <h3 className="text-md md:text-xl font-semibold">
+                  {returnDate?.toLocaleDateString(undefined, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </h3>
+                <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+                  <p className="font-medium text-foreground">Hotel check-out</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedHotel?.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Before {selectedHotel?.check_out_time}
+                  </p>
+                </div>
+                <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+                  <p className="font-medium text-foreground">Inbound flight</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedRetFlight?.flights[0]?.departure_airport?.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {
+                      selectedRetFlight?.flights[0]?.departure_airport.time.split(
+                        " ",
+                      )[1]
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <h4 className="text-xl font-semibold">Enjoy your trip!</h4>
+              <PlaneTakeoff className="w-6 h-6" />
+            </div>
           </div>
         </div>
       )}

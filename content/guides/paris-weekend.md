@@ -38,7 +38,7 @@ Finally, take a walk along the iconic **Champs-Élysées** boulevard, ending at 
 
 **Other activities:**
 
-- Shopping (from expansive shopping centres to independent stores)
+- Shopping (from large shopping centres to independent stores)
 - Visiting art galleries in Le Marais (if the Louvre wasn't enough!)
 
 ---

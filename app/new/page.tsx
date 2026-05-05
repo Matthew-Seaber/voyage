@@ -34,6 +34,7 @@ import {
   fetchHotels,
   fetchEvents,
   fetchWeather,
+  fetchReturnFlights,
 } from "./actions";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -244,7 +245,7 @@ Created with Voyage - your new favorite travel planner!`;
       );
 
       // Fetch round trip flights
-      const roundTripFlights = await fetchRoundTripFlights(
+      const roundTripFlights: Flight[] = await fetchRoundTripFlights(
         departureCode,
         arrivalCode,
         departureDateString,
@@ -553,9 +554,51 @@ Created with Voyage - your new favorite travel planner!`;
                         <div
                           key={idx}
                           className={`cursor-pointer border p-4 rounded-md shadow-sm hover:shadow-md transition-shadow ${selectedDepFlight === flight ? "border-primary" : ""}`}
-                          onClick={() => {
+                          onClick={async () => {
                             setSelectedDepFlight(flight);
-                            setSelectedRetFlight(flight);
+                            setSelectedRetFlight(null);
+
+                            if (!returnDate || !departureDate) {
+                              toast.error("Return date missing.");
+                              return;
+                            }
+
+                            if (!flight.departure_token) {
+                              toast.error("Error fetching return flight data.");
+                              return;
+                            }
+
+                            try {
+                              setFlightsLoading(true);
+
+                              const returnFlights = await fetchReturnFlights(
+                                flight.departure_token,
+                                arrivalCode,
+                                departureCode,
+                                formatDate(departureDate),
+                                formatDate(returnDate),
+                              );
+
+                              if (returnFlights.length === 0) {
+                                toast.error(
+                                  "No return flights found. Please choose a separate departure and return date, or change your dates.",
+                                );
+                                return;
+                              }
+
+                              setFlights((prev) => ({
+                                ...prev,
+                                return: returnFlights || [],
+                              }));
+                            } catch (error) {
+                              console.error(
+                                "Error fetching return flight:",
+                                error,
+                              );
+                              toast.error("Error fetching return flight data.");
+                            } finally {
+                              setFlightsLoading(false);
+                            }
                           }}
                         >
                           <div className="flex items-center justify-between gap-4">
@@ -579,26 +622,17 @@ Created with Voyage - your new favorite travel planner!`;
                                 Outbound:{" "}
                                 {Math.floor(flight.total_duration / 60)}h{" "}
                                 {flight.total_duration % 60}m (
-                                {
-                                  flight.flights[0].departure_airport.time.split(
-                                    " ",
-                                  )[1]
-                                }{" "}
+                                {flight.flights?.[0]?.departure_airport?.time?.split(
+                                  " ",
+                                )[1] ?? "Error"}{" "}
                                 -{" "}
-                                {
-                                  flight.flights[0].arrival_airport.time.split(
-                                    " ",
-                                  )[1]
-                                }{" "}
+                                {flight.flights?.[0]?.arrival_airport?.time?.split(
+                                  " ",
+                                )[1] ?? "Error"}{" "}
                                 local time)
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {flight.flights.length > 1
-                                  ? `${flight.flights.length - 1} stop${flight.flights.length - 1 === 1 ? "" : "s"}`
-                                  : "Direct"}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Inbound data currently unknown
+                                Click to load inbound options
                               </p>
                             </div>
                           </div>
@@ -1281,7 +1315,7 @@ Created with Voyage - your new favorite travel planner!`;
                 {selectedEvents.length > 0 ? (
                   <div className="space-y-3">
                     {selectedEvents.map((event, index) => (
-                      <>
+                      <div key={index}>
                         <h3 className="text-md md:text-xl font-semibold">
                           {formatEventDate(event.date?.start_date)}
                         </h3>
@@ -1299,7 +1333,7 @@ Created with Voyage - your new favorite travel planner!`;
                             {formatEventTime(event.date?.when)}
                           </p>
                         </div>
-                      </>
+                      </div>
                     ))}
                   </div>
                 ) : null}

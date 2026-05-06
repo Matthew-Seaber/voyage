@@ -90,7 +90,7 @@ export default function Home() {
                 <p className="text-muted-foreground mb-2">
                   {guide.description}
                 </p>
-                <span className="text-xs px-2 py-1 bg-secondary rounded-md text-gray-800">
+                <span className="text-xs px-2 py-1 bg-foreground/10 rounded-md text-foreground">
                   {guide.continent}
                 </span>
                 <div className="flex gap-1 mt-4 text-xs text-gray-500">
